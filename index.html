@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex"></head><body>
+<title>Tennis de l'Île aux Moines</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Jost:wght@400;500;600&display=swap">
+<style>
+/* Layout : bandeau vert « club » + grille des 5 jours comme une feuille de court, puis vacances scolaires et familles. */
+:root{
+  --green:#1A4635;      /* anneau et titre du logo */
+  --green-2:#2C5E4A;
+  --clay:#C8612A;       /* balle terre battue */
+  --sage:#D3CCB0;       /* silhouette de l'île */
+  --cream:#F8F1EA;      /* fond du logo */
+  --paper:#FFFCF8;
+  --ink:#17261F;
+  --muted:#5E6B62;
+  --line:#E3DACD;
+  --bg:var(--cream); --fg:var(--ink); --card:var(--paper);
+  --band-bg:var(--green); --band-fg:#F8F1EA;
+  --today:#EFE5D3; --hl:var(--clay); --hl-fg:#fff;
+  --zone:#E7EFE9; --zone-fg:var(--green);
+  --night:#E4E1DA; --night-fg:#9A9C95;
+  --f-display:"Libre Caslon Text", "Iowan Old Style", Georgia, serif;
+  --f-ui:"Jost", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F2219; --fg:#EEE6DA; --card:#16302A; --muted:#A7B3A9; --line:#29463A;
+  --band-bg:#0A1A13; --band-fg:#F1E8DC; --today:#1F3D33; --hl:#E07B42; --hl-fg:#12100E;
+  --zone:#21423A; --zone-fg:#CFE3D6; --sage:#4F5E4D; --night:#0A1712; --night-fg:#55665C; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F2219; --fg:#EEE6DA; --card:#16302A; --muted:#A7B3A9; --line:#29463A;
+  --band-bg:#0A1A13; --band-fg:#F1E8DC; --today:#1F3D33; --hl:#E07B42; --hl-fg:#12100E;
+  --zone:#21423A; --zone-fg:#CFE3D6; --sage:#4F5E4D; --night:#0A1712; --night-fg:#55665C; color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:15px;line-height:1.5;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--band-bg)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;font-weight:700}
+.eyebrow{font-family:var(--f-ui);text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:600}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+
+/* Bandeau */
+.band{background:var(--band-bg);color:var(--band-fg);position:relative;overflow:hidden}
+.band .wrap{display:flex;align-items:center;gap:20px;padding-block:22px 26px;position:relative}
+.band .isle{position:absolute;right:-30px;top:-40px;height:260px;opacity:.13;pointer-events:none}
+.emblem{width:76px;height:76px;flex:none}
+.band h1{font-size:clamp(26px,4.4vw,40px);line-height:1.05;letter-spacing:-.01em}
+.band .eyebrow{color:#E9A57D;margin-bottom:6px}
+.band p{margin:6px 0 0;opacity:.85;font-size:14px}
+
+section{padding-block:28px 8px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-head h2{font-size:24px}
+.sec-head .note{color:var(--muted);font-size:13px}
+
+/* Grille */
+.grid-scroll{overflow-x:auto;border-radius:10px;border:1px solid var(--line);background:var(--card)}
+table.court{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;table-layout:fixed}
+.court th,.court td{border-bottom:1px solid var(--line);text-align:center;padding:0}
+.court thead th{padding:10px 4px 8px;vertical-align:bottom;font-weight:500}
+.court thead .dname{display:block;text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--muted);font-weight:600}
+.court thead .dnum{display:block;font-family:var(--f-display);font-size:22px;line-height:1.1}
+.court thead .dmon{display:block;font-size:12px;color:var(--muted)}
+.court th.hour{width:58px;font-family:var(--f-display);font-weight:400;font-size:15px;color:var(--muted);text-align:right;padding-right:12px;border-right:1px solid var(--line)}
+.court td{height:42px}
+.court thead .sun{display:block;font-size:11px;color:var(--muted);margin-top:4px;white-space:nowrap}
+.court thead .sun b{color:var(--clay);font-weight:600}
+td.dark{background:var(--night)}
+td.dark .cell{color:var(--night-fg);font-weight:400}
+td.dark .cell .num{opacity:.5}
+td.dusk{background:linear-gradient(to bottom,transparent 0 var(--cut),var(--night) var(--cut) 100%)}
+td.dusk .cell{flex-direction:column;gap:0;line-height:1.15}
+.cell small{display:block;font-size:10px;text-transform:none;letter-spacing:0;color:var(--clay);font-weight:600}
+.cell.mine small{color:inherit}
+td.dark .cell.mine{background:transparent;color:var(--night-fg);outline:2px dashed var(--hl);outline-offset:-4px}
+.legend-sun{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+.legend-sun i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:1px solid var(--line)}
+.court .today{background:var(--today)}
+.court thead th.today .dname{color:var(--clay)}
+.cell{display:flex;align-items:center;justify-content:center;gap:6px;height:100%;min-height:42px;padding:0 4px;font-weight:500;letter-spacing:.02em;font-size:14px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.num{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);font-size:11px;color:var(--muted);flex:none;text-transform:none}
+.cell.mine{background:var(--hl);color:var(--hl-fg);font-weight:600}
+.cell.mine .num{border-color:transparent;color:inherit;background:rgba(255,255,255,.18)}
+td.now{box-shadow:inset 0 0 0 2px var(--clay)}
+tr.rest td,tr.rest th{border-bottom:0}
+tr.rest td .cell{font-size:12px;color:var(--muted);font-weight:400;text-transform:none;font-style:italic;font-family:var(--f-display)}
+tr.rest td .cell.mine{color:var(--hl-fg);font-style:normal}
+tr.rest th.hour{font-family:var(--f-ui);font-size:11px;text-transform:uppercase;letter-spacing:.1em}
+.zbadges{display:flex;gap:3px;justify-content:center;margin-top:5px;min-height:18px}
+.zb{font-size:10px;font-weight:600;letter-spacing:.06em;padding:1px 5px;border-radius:3px;background:var(--zone);color:var(--zone-fg)}
+.zb.home{background:var(--green);color:#F8F1EA}
+:root[data-theme="dark"] .zb.home{background:var(--clay);color:#12100E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .zb.home{background:var(--clay);color:#12100E}}
+
+.court .sh{display:none}
+@media (max-width:640px){
+  .court .sh{display:inline}.court .lg{display:none}
+  .court th.hour{width:38px;padding-right:6px;font-size:13px}
+  .cell{font-size:11px;letter-spacing:0;padding:0 2px}
+  .cell .num{display:none}
+  .court thead .dnum{font-size:18px}
+  .court thead .dname{font-size:10px;letter-spacing:.06em}
+  .band .wrap{gap:14px}
+  .emblem{width:58px;height:58px}
+}
+
+/* Familles (filtre) */
+.fam{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:5px 12px 5px 6px;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.chip .num{width:22px;height:22px}
+.chip[aria-pressed="true"]{background:var(--hl);border-color:var(--hl);color:var(--hl-fg)}
+.chip[aria-pressed="true"] .num{color:inherit;border-color:transparent;background:rgba(255,255,255,.2)}
+.mynext{font-size:14px;color:var(--muted);min-height:22px}
+.mynext b{color:var(--fg);font-weight:600}
+
+/* Parcourir */
+.browse{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:7px 12px;font-size:14px;font-weight:500}
+.btn:hover{border-color:var(--green-2)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#F8F1EA}
+:root[data-theme="dark"] .btn.primary{background:var(--clay);border-color:var(--clay);color:#12100E}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{background:var(--clay);border-color:var(--clay);color:#12100E}}
+input[type=date]{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg)}
+
+/* Vacances */
+.years{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.years .btn[aria-pressed="true"]{background:var(--green);color:#F8F1EA;border-color:var(--green)}
+.vac{display:grid;gap:10px}
+.vrow{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(0,3fr) auto;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.vrow h3{font-size:18px}
+.vrow .st{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.vrow .st.prev{color:var(--clay)}
+.zl{display:grid;gap:3px;font-size:14px;min-width:0}
+.zl div{display:flex;gap:8px;align-items:baseline}
+.zl .zb{min-width:58px;text-align:center}
+.vrow.past{opacity:.55}
+@media (max-width:720px){.vrow{grid-template-columns:1fr}.vrow .btn{justify-self:start}}
+
+/* Familles / contacts */
+.contacts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.ct{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-width:0}
+.ct .nm{font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:14px}
+.ct .ph{font-variant-numeric:tabular-nums;font-size:14px;color:var(--fg);text-decoration:none;user-select:all}
+.ct small{color:var(--muted)}
+.rule{font-family:var(--f-display);font-size:15px;max-width:68ch;color:var(--fg)}
+.rule em{color:var(--clay);font-style:italic}
+footer{padding-block:28px 40px;color:var(--muted);font-size:13px}
+footer p{max-width:75ch;margin:6px 0}
+
+/* Feuille imprimable */
+#print{display:none}
+body.preview #app{display:none}
+body.preview #print{display:block;padding:16px}
+.ptools{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.sheet{background:#fff;color:#17261F;width:277mm;max-width:100%;margin:0 auto 16px;padding:7mm 8mm;box-shadow:0 2px 14px rgba(0,0,0,.15);overflow-x:auto}
+.sheet .ph-head{display:flex;align-items:center;gap:12px;border-bottom:2px solid #1A4635;padding-bottom:6px;margin-bottom:6px}
+.sheet .ph-head svg{width:44px;height:44px}
+.sheet .ph-head h1{font-family:var(--f-display);font-size:20px;color:#1A4635;line-height:1.1}
+.sheet .ph-head .sub{font-family:var(--f-ui);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#C8612A;font-weight:600}
+.sheet .ph-head .zones{margin-left:auto;font-size:10.5px;text-align:right;line-height:1.45}
+.sheet table{border-collapse:collapse;width:100%;table-layout:fixed;font-family:var(--f-ui);font-variant-numeric:tabular-nums}
+.sheet th,.sheet td{border:1px solid #CFC5B5;text-align:center;padding:0}
+.sheet thead th{background:#F8F1EA;font-weight:600;font-size:9px;padding:2px 0;color:#1A4635}
+.sheet thead .d{font-family:var(--f-display);font-size:13px;display:block;color:#17261F;font-weight:700}
+.sheet thead tr.zr th{font-size:8px;font-weight:600;letter-spacing:.04em;background:#fff;padding:1px 0;color:#1A4635}
+.sheet thead tr.zr th.on{background:#E7EFE9}
+.sheet th.h{width:13mm;font-family:var(--f-display);font-weight:400;font-size:11px;background:#F8F1EA;color:#17261F}
+.sheet thead tr.sr th{font-size:8px;font-weight:600;color:#C8612A;background:#fff;padding:1px 0}
+.sheet td.dk{background:#E4E1DA;color:#A3A49D;font-weight:400}
+.sheet td.du{background:linear-gradient(to bottom,#fff 0 55%,#E4E1DA 55% 100%)}
+.sheet td .sn{display:block;font-size:7px;color:#C8612A;font-weight:600}
+.sheet td{height:11.2mm;font-size:10.5px;font-weight:600;letter-spacing:0;white-space:nowrap;overflow:hidden}
+.sheet td .n{display:block;font-size:7.5px;color:#8A8F86;font-weight:500}
+.sheet tr.rp td{font-family:var(--f-display);font-style:italic;text-transform:none;font-weight:400;color:#5E6B62;height:8mm;font-size:10px}
+.sheet .we{background:#FBF7F1}
+.sheet .leg{display:grid;grid-template-columns:repeat(5,1fr);gap:2px 10px;margin-top:6px;font-size:9.5px}
+.sheet .leg b{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid #1A4635;text-align:center;font-size:8px;line-height:13px;margin-right:4px;color:#1A4635}
+.sheet .foot{display:flex;justify-content:space-between;font-size:8.5px;color:#5E6B62;margin-top:4px}
+
+@media print{
+  @page{size:A4 landscape;margin:8mm}
+  body{background:#fff!important;color:#000}
+  body::before{display:none}
+  #app,.ptools{display:none!important}
+  #print{display:block!important;padding:0!important}
+  .sheet{box-shadow:none;margin:0;width:auto;padding:0;page-break-after:always;break-after:page;overflow:visible}
+  .sheet:last-child{page-break-after:auto;break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media (prefers-reduced-motion: no-preference){.cell{transition:background .15s}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <path id="isle-path" d="M12 560 L8 560 L2 552 L2 511 L4 506 L2 496 L6 487 L6 471 L0 454 L2 448 L4 448 L8 443 L10 439 L18 432 L22 417 L20 406 L26 397 L30 382 L34 375 L40 349 L46 343 L50 335 L46 326 L46 318 L48 313 L48 304 L52 295 L48 288 L48 283 L52 275 L56 257 L48 227 L58 217 L60 210 L64 203 L68 187 L68 179 L79 176 L92 164 L92 160 L92 146 L94 139 L92 132 L81 118 L67 116 L62 111 L68 103 L70 99 L68 94 L75 94 L81 98 L88 98 L90 100 L90 105 L106 124 L116 124 L122 118 L124 110 L126 107 L128 98 L130 95 L132 82 L140 61 L144 32 L155 26 L164 18 L166 2 L168 0 L171 0 L178 4 L178 7 L186 16 L184 24 L186 32 L178 51 L180 58 L184 63 L184 74 L178 83 L178 95 L174 99 L172 103 L174 111 L170 116 L166 131 L164 137 L166 143 L171 148 L180 151 L184 164 L178 170 L178 176 L182 188 L191 194 L202 194 L208 200 L216 200 L222 198 L241 180 L248 184 L253 182 L257 182 L258 191 L262 196 L271 196 L280 204 L290 204 L295 206 L301 204 L307 208 L310 213 L310 229 L303 236 L295 238 L282 226 L274 226 L249 220 L236 224 L232 228 L230 236 L230 240 L229 242 L220 242 L212 248 L210 248 L193 232 L182 228 L173 226 L163 222 L148 222 L142 226 L135 228 L126 235 L126 242 L114 254 L106 266 L102 288 L88 324 L88 329 L92 334 L90 353 L92 357 L96 362 L98 370 L88 379 L88 381 L76 391 L75 396 L63 396 L57 400 L52 405 L51 410 L47 414 L45 412 L39 414 L34 420 L32 424 L34 428 L38 432 L42 434 L47 432 L52 428 L59 432 L65 432 L68 428 L70 433 L64 444 L66 456 L72 468 L80 475 L80 478 L86 484 L99 486 L102 489 L87 506 L82 504 L75 498 L67 494 L60 496 L53 500 L41 494 L31 496 L26 501 L26 519 L20 533 L24 540 L24 548 L22 552 L16 554 L12 560Z"/>
+    <symbol id="emblem" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="47" fill="#F8F1EA" stroke="#1A4635" stroke-width="4.5"/>
+      <use href="#isle-path" transform="translate(36 8) scale(0.152)" fill="#D3CCB0"/>
+      <path d="M11 62 C 12 46, 17 36, 24 30" fill="none" stroke="#C8612A" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M15.5 66 C 16.5 51, 21 41, 27 35" fill="none" stroke="#1A4635" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="29" cy="27" r="7.5" fill="#C8612A"/>
+      <path d="M24 22.5 C 28 25, 28 29.5, 24.4 33 M34 21.5 C 30 24.5, 30 29, 34.3 32" fill="none" stroke="#F8F1EA" stroke-width="1.1" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="app">
+  <header class="band">
+    <svg class="isle" viewBox="0 0 310 561" aria-hidden="true"><use href="#isle-path" fill="#D3CCB0"/></svg>
+    <div class="wrap">
+      <svg class="emblem" role="img" aria-label="Emblème du tennis de l'Île aux Moines"><use href="#emblem"/></svg>
+      <div>
+        <div class="eyebrow">Planning du court · 9 h – 20 h</div>
+        <h1>Tennis de l'Île aux Moines</h1>
+        <p id="todayline">&nbsp;</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section aria-labelledby="h-next">
+      <div class="sec-head">
+        <h2 id="h-next">Les 5 prochains jours</h2>
+        <span class="note">Le créneau en cours est entouré.</span>
+      </div>
+      <div class="grid-scroll"><table class="court" id="next"></table></div>
+      <div class="fam" id="fam" role="group" aria-label="Mettre en évidence une famille"></div>
+      <div class="legend-sun"><span><i style="background:var(--night)"></i>Soleil couché : créneau non jouable</span><span><i style="background:linear-gradient(to bottom,var(--card) 50%,var(--night) 50%)"></i>Le soleil se couche pendant le créneau</span></div>
+      <div class="mynext" id="mynext">Touchez votre famille pour voir vos créneaux.</div>
+    </section>
+
+    <section aria-labelledby="h-browse">
+      <div class="sec-head">
+        <h2 id="h-browse">Consulter une autre date</h2>
+        <div class="browse">
+          <button class="btn" id="prev" aria-label="Semaine précédente">← 7 jours</button>
+          <input type="date" id="pick" aria-label="Choisir une date">
+          <button class="btn" id="nextw" aria-label="Semaine suivante">7 jours →</button>
+        </div>
+      </div>
+      <div class="grid-scroll"><table class="court" id="week"></table></div>
+    </section>
+
+    <section aria-labelledby="h-vac">
+      <div class="sec-head">
+        <h2 id="h-vac">Vacances scolaires · imprimer le planning</h2>
+        <span class="note">Île-aux-Moines : académie de Rennes, <b>zone B</b></span>
+      </div>
+      <div class="years" id="years" role="group" aria-label="Année scolaire"></div>
+      <div class="vac" id="vac"></div>
+    </section>
+
+    <section aria-labelledby="h-fam">
+      <div class="sec-head"><h2 id="h-fam">Les familles</h2></div>
+      <div class="contacts" id="contacts"></div>
+    </section>
+
+    <section aria-labelledby="h-rule">
+      <div class="sec-head"><h2 id="h-rule">La règle de rotation</h2></div>
+      <p class="rule">Onze créneaux d'une heure, de 9 h à 20 h, pour dix familles. Chaque jour, chaque famille <em>joue une heure plus tard</em> que la veille ; celle de 19 h repart à 9 h le lendemain. Comme il y a onze créneaux pour dix familles, la famille de 9 h joue aussi à 19 h. Le cycle se répète tous les dix jours, toute l'année. Les créneaux où le soleil est couché à l'Île-aux-Moines sont grisés.</p>
+    </section>
+
+    <footer>
+      <p>Planning calculé automatiquement jusqu'à la fin des vacances de Noël 2036 (4 janvier 2037), à partir de la rotation de la Toussaint 2026 (samedi 17 octobre 2026).</p>
+      <p>Vacances : calendrier officiel du ministère de l'Éducation nationale pour 2026-2027 et 2027-2028 ; années suivantes <b>prévisionnelles</b>, établies selon les règles habituelles (à vérifier sur education.gouv.fr quand le calendrier officiel paraît).</p>
+    </footer>
+  </main>
+</div>
+
+<div id="print" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+var SITE = "https://tennis-ile-aux-moines.vercel.app/";
+var CAN_PRINT = /(netlify|vercel)\.app$/.test(location.hostname) || location.protocol === "file:";
+
+/* ---------- Familles ---------- */
+var FAM = {
+  1:{n:"Belfort",  t:"06 63 60 62 71", f:"35 06"},
+  2:{n:"Guyader",  t:"06 07 81 62 90", f:"39 93"},
+  3:{n:"Tolot",    t:"06 63 72 53 44", f:""},
+  4:{n:"O'Neill",  t:"06 09 79 85 62", f:""},
+  5:{n:"Mautin",   t:"06 78 59 01 51", f:"33 48"},
+  6:{n:"Pelletier",t:"06 48 46 34 58", f:"34 48"},
+  7:{n:"Perisse",  t:"06 77 84 95 73", f:"36 01"},
+  8:{n:"Court",    t:"06 07 68 67 37", f:"37 65"},
+  9:{n:"Lethu",    t:"06 25 02 26 61", f:""},
+  10:{n:"Vallat",  t:"06 10 88 22 65", f:"34 06"}
+};
+/* Ordre du cycle, lu sur le planning de la Toussaint 2026 */
+var CYCLE = [4,7,2,8,5,3,10,9,6,1];
+var HOURS = [9,10,11,12,13,14,15,16,17,18,19];
+var NS = HOURS.length;
+
+/* ---------- Dates (jours entiers, UTC) ---------- */
+function D(y,m,d){ return Math.round(Date.UTC(y,m-1,d)/864e5); }
+function toDate(n){ return new Date(n*864e5); }
+function dow(n){ return toDate(n).getUTCDay(); } /* 0 = dimanche */
+var ANCHOR = D(2026,10,17);
+var END = D(2037,1,4);
+function todayN(){ var t=new Date(); return D(t.getFullYear(), t.getMonth()+1, t.getDate()); }
+var JOURS = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+var JOURS_L = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+var MOIS = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+var MOIS_L = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+function fmt(n){ var d=toDate(n); return JOURS[d.getUTCDay()]+" "+d.getUTCDate()+" "+MOIS[d.getUTCMonth()]; }
+function fmtL(n){ var d=toDate(n); return JOURS_L[d.getUTCDay()]+" "+d.getUTCDate()+" "+MOIS_L[d.getUTCMonth()]+" "+d.getUTCFullYear(); }
+function mod(a,b){ return ((a%b)+b)%b; }
+
+function slot(n,h){ return CYCLE[mod(h-(n-ANCHOR),10)]; }      /* h = 0..8 (9 h..17 h) */
+
+/* ---------- Coucher du soleil à l'Île-aux-Moines (47.595 N, 2.847 O) ---------- */
+var LAT=47.5947, LON=-2.8467, RAD=Math.PI/180;
+function lastSunday(y,m){ var n=D(y,m+1,1)-1; while(dow(n)!==0) n--; return n; }
+function parisOffset(utcMs){ var y=new Date(utcMs).getUTCFullYear();
+  var a=lastSunday(y,3)*864e5+36e5, b=lastSunday(y,10)*864e5+36e5; return (utcMs>=a&&utcMs<b)?2:1; }
+var SUNC={};
+function sunset(n){ /* minutes depuis minuit, heure de Paris */
+  if(SUNC[n]!=null) return SUNC[n];
+  var Jd=n+2440587.5+0.5, nn=Math.round(Jd-2451545+0.0008), Js=nn-LON/360;
+  var M=(357.5291+0.98560028*Js)%360, Mr=M*RAD;
+  var C=1.9148*Math.sin(Mr)+0.02*Math.sin(2*Mr)+0.0003*Math.sin(3*Mr);
+  var L=((M+C+180+102.9372)%360)*RAD;
+  var Jt=2451545+Js+0.0053*Math.sin(Mr)-0.0069*Math.sin(2*L);
+  var sd=Math.sin(L)*Math.sin(23.4397*RAD), cd=Math.cos(Math.asin(sd));
+  var cw=(Math.sin(-0.833*RAD)-Math.sin(LAT*RAD)*sd)/(Math.cos(LAT*RAD)*cd);
+  var Jset=Jt+Math.acos(cw)/RAD/360, ms=(Jset-2440587.5)*864e5;
+  var loc=new Date(ms+parisOffset(ms)*36e5); var v=loc.getUTCHours()*60+loc.getUTCMinutes();
+  return (SUNC[n]=v);
+}
+function hm(v){ var h=Math.floor(v/60), m=v%60; return h+" h "+(m<10?"0":"")+m; }
+/* état d'un créneau : 0 jouable, 1 le soleil se couche pendant, 2 nuit */
+function light(n,k){ var s=sunset(n), a=HOURS[k]*60; return s<=a?2:(s<a+60?1:0); }
+
+
+/* ---------- Vacances scolaires ---------- */
+function nextDow(n,w){ while(dow(n)!==w) n++; return n; }
+function easter(y){ var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1; return D(y,mo,da); }
+function same(s,e){ return {A:[s,e],B:[s,e],C:[s,e]}; }
+function z3(a,b,c){ return {A:a,B:b,C:c}; }
+var LABEL = {toussaint:"Toussaint", noel:"Noël", hiver:"Hiver", printemps:"Printemps", pont:"Pont de l'Ascension", ete:"Été"};
+
+var OFFICIAL = {
+  2026:[
+    ["toussaint", same(D(2026,10,17),D(2026,11,1))],
+    ["noel", same(D(2026,12,19),D(2027,1,3))],
+    ["hiver", z3([D(2027,2,13),D(2027,2,28)],[D(2027,2,20),D(2027,3,7)],[D(2027,2,6),D(2027,2,21)])],
+    ["printemps", z3([D(2027,4,10),D(2027,4,25)],[D(2027,4,17),D(2027,5,2)],[D(2027,4,3),D(2027,4,18)])],
+    ["pont", same(D(2027,5,6),D(2027,5,9))],
+    ["ete", same(D(2027,7,3),D(2027,9,1))]
+  ],
+  2027:[
+    ["toussaint", same(D(2027,10,23),D(2027,11,7))],
+    ["noel", same(D(2027,12,18),D(2028,1,2))],
+    ["hiver", z3([D(2028,2,19),D(2028,3,5)],[D(2028,2,5),D(2028,2,20)],[D(2028,2,12),D(2028,2,27)])],
+    ["printemps", z3([D(2028,4,22),D(2028,5,8)],[D(2028,4,8),D(2028,4,23)],[D(2028,4,15),D(2028,5,1)])],
+    ["pont", same(D(2028,5,25),D(2028,5,28))],
+    ["ete", same(D(2028,7,4),D(2028,9,3)), true]   /* rentrée 2028 non encore publiée */
+  ]
+};
+var ORDERS = [["C","A","B"],["B","C","A"],["A","B","C"]]; /* 2027, 2028, 2029… */
+function projected(y){ /* année scolaire y / y+1 */
+  var y1=y+1, out=[];
+  var tR=nextDow(D(y,11,2),1); out.push(["toussaint", same(tR-16,tR-1)]);
+  var nR=nextDow(D(y1,1,2),1); out.push(["noel", same(nR-16,nR-1)]);
+  var ord=ORDERS[mod(y1-2027,3)];
+  function wave(first){ var z={}; ord.forEach(function(k,i){ var s=first+7*i; z[k]=[s,s+15]; }); return z; }
+  out.push(["hiver", wave(nextDow(D(y1,2,4),6))]);
+  out.push(["printemps", wave(nextDow(D(y1,4,2),6))]);
+  var asc=easter(y1)+39; out.push(["pont", same(asc,asc+3)]);
+  var r=D(y1,9,1); if(dow(r)===5||dow(r)===6||dow(r)===0) r=nextDow(r,1);
+  out.push(["ete", same(nextDow(D(y1,7,1),6), r-1)]);
+  return out;
+}
+var PERIODS=[];
+for(var y=2026;y<=2036;y++){
+  var list = OFFICIAL[y] || projected(y);
+  list.forEach(function(p){
+    var z=p[1], s=Math.min(z.A[0],z.B[0],z.C[0]), e=Math.max(z.A[1],z.B[1],z.C[1]);
+    if(s>END) return;
+    var yr = (p[0]==="toussaint"||p[0]==="noel") ? toDate(s).getUTCFullYear() : y+1;
+    if(p[0]==="noel") yr = y+"-"+(y+1);
+    PERIODS.push({id:p[0]+"-"+y, key:p[0], sy:y, label:LABEL[p[0]], year:yr, zones:z, s:s, e:Math.min(e,END),
+      prev: !OFFICIAL[y] || !!p[2]});
+  });
+}
+function zonesOn(n){ var r=[]; PERIODS.forEach(function(p){ if(n>=p.s&&n<=p.e){ ["A","B","C"].forEach(function(k){ if(n>=p.zones[k][0]&&n<=p.zones[k][1]&&r.indexOf(k)<0) r.push(k); }); } }); return r.sort(); }
+
+/* ---------- Mise en évidence d'une famille ---------- */
+var mine = null;
+try{ var sv = localStorage.getItem("tennis-iam-famille"); if(sv) mine = +sv || null; }catch(e){}
+
+function cellHTML(f,isRest,note){
+  var cls="cell"+(f===mine?" mine":"");
+  if(note) return '<div class="'+cls+'"><span>'+FAM[f].n+'</span><small>'+note+'</small></div>';
+  return '<div class="'+cls+'"><span class="num">'+f+'</span>'+FAM[f].n+'</div>';
+}
+function gridHTML(start,count,opts){
+  var t=todayN(), now=new Date(), hNow=now.getHours();
+  var h='<thead><tr><th class="hour" scope="col"><span class="sr" style="position:absolute;left:-9999px">Heure</span></th>';
+  for(var i=0;i<count;i++){
+    var n=start+i, d=toDate(n), cls=n===t?"today":"";
+    var nm = n===t?"<span class=\"lg\">Aujourd'hui</span><span class=\"sh\">Auj.</span>":(n===t+1?"Demain":"<span class=\"lg\">"+JOURS_L[d.getUTCDay()]+"</span><span class=\"sh\">"+JOURS[d.getUTCDay()]+"</span>");
+    var z=zonesOn(n).map(function(k){ return '<span class="zb'+(k==="B"?" home":"")+'" title="Vacances zone '+k+'">'+k+'</span>'; }).join("");
+    h+='<th class="'+cls+'" scope="col"><span class="dname">'+nm+'</span><span class="dnum">'+d.getUTCDate()+'</span><span class="dmon">'+MOIS[d.getUTCMonth()]+'</span><div class="zbadges">'+z+'</div></th>';
+  }
+  h+='</tr></thead><tbody>';
+  for(var k=0;k<NS;k++){
+    h+='<tr><th class="hour" scope="row">'+HOURS[k]+' h</th>';
+    for(var j=0;j<count;j++){ var m=start+j; var nowc=(m===t&&hNow===HOURS[k])?" now":"";
+      var L=light(m,k), f=slot(m,k), extra="", st="";
+      if(L===2) extra=" dark";
+      if(L===1){ extra=" dusk"; st=' style="--cut:'+Math.round((sunset(m)-HOURS[k]*60)/60*100)+'%"'; }
+      h+='<td class="'+(m===t?"today":"")+nowc+extra+'"'+st+(L===2?' title="Soleil couché"':'')+'>'+cellHTML(f,false)+'</td>'; }
+    h+='</tr>';
+  }
+  return h+'</tbody>';
+}
+
+var weekStart = todayN();
+function renderGrids(){
+  var t=todayN();
+  document.getElementById("next").innerHTML = gridHTML(t,5);
+  document.getElementById("week").innerHTML = gridHTML(weekStart,7);
+  var pk=document.getElementById("pick"); var d=toDate(weekStart);
+  pk.value = d.toISOString().slice(0,10);
+  document.getElementById("todayline").textContent = "Nous sommes le "+fmtL(t)+(zonesOn(t).length?" · vacances zone"+(zonesOn(t).length>1?"s ":" ")+zonesOn(t).join(", "):"");
+  renderMine();
+}
+function renderMine(){
+  var el=document.getElementById("mynext");
+  if(!mine){ el.innerHTML="Touchez votre famille pour voir vos créneaux."; return; }
+  var t=todayN(), out=[];
+  for(var i=0;i<5;i++){ var n=t+i, ks=[]; for(var j=0;j<NS;j++) if(slot(n,j)===mine){
+      var L=light(n,j); ks.push(L===2?'<s>'+HOURS[j]+' h</s>':'<b>'+HOURS[j]+' h</b>'+(L===1?' (fin de jour)':'')); }
+    out.push((i===0?"aujourd'hui":i===1?"demain":fmt(n))+" "+ks.join(" et ")); }
+  el.innerHTML = '<b>'+FAM[mine].n.toUpperCase()+'</b> · '+out.join(" · ");
+}
+function renderChips(){
+  var h=""; for(var f=1;f<=10;f++) h+='<button class="chip" id="chip-'+f+'" data-f="'+f+'" aria-pressed="'+(mine===f)+'"><span class="num">'+f+'</span>'+FAM[f].n+'</button>';
+  var el=document.getElementById("fam"); el.innerHTML=h;
+  el.onclick=function(e){ var b=e.target.closest(".chip"); if(!b) return; var f=+b.dataset.f; mine = (mine===f)?null:f;
+    try{ if(mine) localStorage.setItem("tennis-iam-famille",mine); else localStorage.removeItem("tennis-iam-famille"); }catch(_){}
+    renderChips(); renderGrids(); };
+}
+function renderContacts(){
+  var h=""; for(var f=1;f<=10;f++){ var x=FAM[f];
+    h+='<div class="ct"><span class="num">'+f+'</span><div style="min-width:0"><div class="nm">'+x.n+'</div><a class="ph" href="tel:'+x.t.replace(/ /g,"")+'">'+x.t+'</a>'+(x.f?' <small>· fixe '+x.f+'</small>':'')+'</div></div>'; }
+  document.getElementById("contacts").innerHTML=h;
+}
+
+/* ---------- Vacances : liste ---------- */
+var years = []; PERIODS.forEach(function(p){ if(years.indexOf(p.sy)<0) years.push(p.sy); });
+var t0=todayN();
+var curYear = (PERIODS.filter(function(p){return p.e>=t0;})[0]||PERIODS[0]).sy;
+function renderYears(){
+  document.getElementById("years").innerHTML = years.map(function(y){ return '<button class="btn" id="y-'+y+'" data-y="'+y+'" aria-pressed="'+(y===curYear)+'">'+y+'-'+(y+1)+'</button>'; }).join("");
+}
+function zoneLine(p){
+  var allSame = p.zones.A[0]===p.zones.B[0]&&p.zones.B[0]===p.zones.C[0]&&p.zones.A[1]===p.zones.B[1]&&p.zones.B[1]===p.zones.C[1];
+  if(allSame) return '<div><span class="zb">A · B · C</span><span>du '+fmt(p.zones.A[0])+' au '+fmt(p.zones.A[1])+'</span></div>';
+  return ["A","B","C"].map(function(k){ return '<div><span class="zb'+(k==="B"?" home":"")+'">Zone '+k+'</span><span>du '+fmt(p.zones[k][0])+' au '+fmt(p.zones[k][1])+'</span></div>'; }).join("");
+}
+function renderVac(){
+  var t=todayN();
+  var h = PERIODS.filter(function(p){ return p.sy===curYear; }).map(function(p){
+    var title = p.label+" "+(typeof p.year==="number"?p.year:p.year);
+    var btn = CAN_PRINT ? '<button class="btn primary" id="pr-'+p.id+'" data-print="'+p.id+'">Imprimer</button>'
+                        : '<a class="btn primary" href="'+SITE+'#print-'+p.id+'" target="_blank" rel="noopener">Imprimer</a>';
+    return '<div class="vrow'+(p.e<t?" past":"")+'"><div><h3>'+title+'</h3><div class="st'+(p.prev?" prev":"")+'">'+(p.prev?"Dates prévisionnelles":"Calendrier officiel")+'</div></div><div class="zl">'+zoneLine(p)+'</div>'+btn+'</div>';
+  }).join("");
+  document.getElementById("vac").innerHTML = h;
+}
+
+/* ---------- Feuilles imprimables ---------- */
+function sheetHTML(p, start, count, page, pages){
+  var zl = ["A","B","C"].map(function(k){ return "<b>Zone "+k+"</b> "+fmt(p.zones[k][0])+" → "+fmt(p.zones[k][1]); }).join("<br>");
+  var h='<div class="sheet"><div class="ph-head"><svg viewBox="0 0 100 100"><use href="#emblem"/></svg><div><div class="sub">Planning du court · vacances '+(p.key==="pont"?"":"de ")+p.label.toLowerCase()+' '+p.year+'</div><h1>Tennis de l\'Île aux Moines</h1></div><div class="zones">'+zl+'</div></div>';
+  h+='<table><thead><tr><th class="h" rowspan="2">Heure</th>';
+  for(var i=0;i<count;i++){ var n=start+i,d=toDate(n),we=(d.getUTCDay()===0||d.getUTCDay()===6)?' class="we"':'';
+    h+='<th'+we+'>'+JOURS[d.getUTCDay()].replace(".","").toUpperCase()+'<span class="d">'+d.getUTCDate()+'</span>'+MOIS[d.getUTCMonth()]+'</th>'; }
+  h+='</tr><tr class="zr">';
+  for(var a=0;a<count;a++){ var zz=zonesOn(start+a); h+='<th class="'+(zz.length?"on":"")+'">'+(zz.length?zz.join(" "):"–")+'</th>'; }
+  h+='</tr></thead><tbody>';
+  for(var k=0;k<NS;k++){ h+='<tr><th class="h">'+HOURS[k]+' h</th>';
+    for(var j=0;j<count;j++){ var m=start+j,f=slot(m,k),L=light(m,k),c=[];
+      if(dow(m)===0||dow(m)===6) c.push("we"); if(L===2) c.push("dk"); if(L===1) c.push("du");
+      h+='<td'+(c.length?' class="'+c.join(" ")+'"':'')+'>'+FAM[f].n+'<span class="n">'+f+'</span>'+'</td>'; }
+    h+='</tr>'; }
+  h+='</tbody></table>';
+  h+='<div class="leg">'; for(var f2=1;f2<=10;f2++) h+='<div><b>'+f2+'</b>'+FAM[f2].n.toUpperCase()+' · '+FAM[f2].t+(FAM[f2].f?' ('+FAM[f2].f+')':'')+'</div>'; h+='</div>';
+  h+='<div class="foot"><span>Rotation : chaque jour, chaque famille joue une heure plus tard ; celle de 19 h repart à 9 h. La famille de 9 h joue aussi à 19 h. Grisé : soleil couché.'+(p.prev?' Dates de vacances prévisionnelles.':'')+'</span><span>'+(pages>1?'Page '+page+'/'+pages+' · ':'')+SITE.replace("https://","").replace(/\/$/,"")+'</span></div></div>';
+  return h;
+}
+function buildPrint(id){
+  var p=PERIODS.filter(function(x){return x.id===id;})[0]; if(!p) return false;
+  var N=p.e-p.s+1, pages=Math.ceil(N/16), per=Math.ceil(N/pages), h="";
+  h+='<div class="ptools"><button class="btn primary" id="doprint">Imprimer</button><button class="btn" id="back">Retour au planning</button></div>';
+  for(var i=0;i<pages;i++){ var st=p.s+i*per; h+=sheetHTML(p, st, Math.min(per, p.e-st+1), i+1, pages); }
+  document.getElementById("print").innerHTML=h;
+  document.getElementById("doprint").onclick=function(){ window.print(); };
+  document.getElementById("back").onclick=function(){ document.body.classList.remove("preview"); try{ history.replaceState(null,"",location.pathname); }catch(_){} };
+  return true;
+}
+
+/* ---------- Événements ---------- */
+document.getElementById("years").onclick=function(e){ var b=e.target.closest("[data-y]"); if(!b) return; curYear=+b.dataset.y; renderYears(); renderVac(); };
+document.getElementById("vac").onclick=function(e){ var b=e.target.closest("[data-print]"); if(!b) return; if(buildPrint(b.dataset.print)){ window.print(); } };
+document.getElementById("prev").onclick=function(){ weekStart=Math.max(ANCHOR,weekStart-7); renderGrids(); };
+document.getElementById("nextw").onclick=function(){ weekStart=Math.min(END-6,weekStart+7); renderGrids(); };
+document.getElementById("pick").onchange=function(e){ var v=e.target.value; if(!v) return; var a=v.split("-"); var n=D(+a[0],+a[1],+a[2]); weekStart=Math.min(END-6,Math.max(ANCHOR,n)); renderGrids(); };
+var pk=document.getElementById("pick"); pk.min=toDate(ANCHOR).toISOString().slice(0,10); pk.max=toDate(END).toISOString().slice(0,10);
+
+renderChips(); renderContacts(); renderGrids(); renderYears(); renderVac();
+setInterval(renderGrids, 5*60*1000);
+
+/* Lien direct vers une impression : …/#print-hiver-2026 */
+var hmatch = location.hash.match(/^#print-(.+)$/);
+if(hmatch && buildPrint(decodeURIComponent(hmatch[1]))){
+  document.body.classList.add("preview");
+  if(CAN_PRINT) setTimeout(function(){ (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){ window.print(); }); }, 400);
+}
+window.__T = {slot:slot, sunset:sunset, hm:hm, D:D, PERIODS:PERIODS, zonesOn:zonesOn};
+})();
+</script>
+
+</body></html>
