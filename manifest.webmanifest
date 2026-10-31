@@ -1,0 +1,18 @@
+{
+  "name": "Tennis de l'Île aux Moines",
+  "short_name": "Tennis IAM",
+  "description": "Planning du court de tennis de l'Île aux Moines : rotation des familles et vacances scolaires.",
+  "lang": "fr",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F8F1EA",
+  "theme_color": "#1A4635",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
